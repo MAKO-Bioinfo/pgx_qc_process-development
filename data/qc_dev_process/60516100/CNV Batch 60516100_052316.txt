@@ -1,0 +1,72 @@
+Analysis Software: CopyCaller v2.1
+
+
+File name: CNV Batch 60516100_2016-05-23_export.txt
+Target name: Hs00010001_cn
+Reference name: Reference
+
+File Header:
+* Barcode = NA
+* Block Type = 384-Well Block
+* Calibration Background is expired  = No
+* Calibration Background performed on  = 03-01-2016 13:26:34 EST
+* Calibration FAM is expired  = Yes
+* Calibration FAM performed on  = 11-20-2015 13:21:43 EST
+* Calibration NED is expired  = Yes
+* Calibration NED performed on  = 11-20-2015 13:55:25 EST
+* Calibration ROI is expired  = Yes
+* Calibration ROI performed on  = 11-20-2015 12:56:48 EST
+* Calibration ROX is expired  = Yes
+* Calibration ROX performed on  = 11-20-2015 13:47:07 EST
+* Calibration SYBR is expired  = Yes
+* Calibration SYBR performed on  = 11-20-2015 14:13:04 EST
+* Calibration TAMRA is expired  = Yes
+* Calibration TAMRA performed on  = 11-20-2015 14:04:40 EST
+* Calibration Uniformity is expired  = Yes
+* Calibration Uniformity performed on  = 11-20-2015 13:12:57 EST
+* Calibration VIC is expired  = Yes
+* Calibration VIC performed on  = 11-20-2015 13:38:46 EST
+* Chemistry = TAQMAN
+* Comment = NA
+* Date Created = 05-23-2016 16:35:25 EDT
+* Experiment File Name = D:\Applied Biosystems\QuantStudio 12K Flex Software\User Files\experiments\2016-05-23 101414 P16050003 CNV.eds
+* Experiment Name = 2016-05-23 101414 P16050003 CNV
+* Experiment Run End Time = 05-23-2016 08:44:09 EDT
+* Experiment Type = Standard Curve
+* Instrument Name = 285880875
+* Instrument Serial Number = 285880875
+* Instrument Type = QuantStudio 12K Flex
+* Passive Reference = ROX
+* Quantification Cycle Method = Ct
+* Signal Smoothing On = true
+* Stage/ Cycle where Analysis is performed = Stage 2, Step 2
+* User Name = NA
+
+Analysis Parameters:
+VIC Ct detection threshold: 32.0
+Most frequent sample copy number: 2
+
+Total number of samples: 10
+- Negative control: 1
+- 2 Copies: 7
+- 3 Copies: 2
+
+Total number of wells omitted from analysis: 4
+- Negative control sample well: 4
+
+Delta Ct variance: 0.0711
+
+Sample Name	Target	Reference	Plate ID	CN Calculated	CN Predicted	Confidence	|Z-Score|	Replicate Count	Replicates Analyzed	FAM Ct Mean	VIC Ct Mean	Delta Ct Mean	Delta Ct SD	Delta Delta Ct	RQ	Min CN	Max CN	CN Range	Sample Comments
+NA17014_PC	Hs00010001_cn	Reference		2.54	3	0.54	2.26	4	4	24.7315	25.4998	-0.7683	0.05	-0.34	1.27	2.45	2.67	0.22	 
+NTC	Hs00010001_cn	Reference						4	0										 
+P16050003	Hs00010001_cn	Reference		1.83	2	> 0.99	1.08	4	4	24.4523	24.7490	-0.2968	0.08	0.13	0.92	1.69	1.91	0.22	 
+Z00029	Hs00010001_cn	Reference		1.95	2	> 0.99	0.04	4	4	23.9933	24.3780	-0.3847	0.05	0.04	0.97	1.86	2.00	0.13	 
+Z00030	Hs00010001_cn	Reference		1.97	2	> 0.99	0.02	4	4	24.9548	25.3540	-0.3993	0.07	0.03	0.98	1.86	2.06	0.21	 
+Z00031	Hs00010001_cn	Reference		2.09	2	> 0.99	0.61	4	4	25.1515	25.6408	-0.4893	0.04	-0.06	1.05	2.00	2.15	0.15	 
+Z00032	Hs00010001_cn	Reference		2.10	2	> 0.99	0.74	4	4	24.4475	24.9438	-0.4963	0.02	-0.07	1.05	2.05	2.13	0.07	 
+Z00033	Hs00010001_cn	Reference		2.02	2	> 0.99	0.06	4	4	25.2103	25.6495	-0.4393	0.04	-0.01	1.01	1.94	2.08	0.14	 
+Z00034	Hs00010001_cn	Reference		2.71	3	> 0.99	1.22	4	4	25.0318	25.8938	-0.8620	0.03	-0.44	1.35	2.66	2.77	0.11	 
+Z00036	Hs00010001_cn	Reference		1.91	2	> 0.99	0.19	4	4	24.9168	25.2735	-0.3567	0.05	0.07	0.95	1.84	1.98	0.14	 
+
+
+

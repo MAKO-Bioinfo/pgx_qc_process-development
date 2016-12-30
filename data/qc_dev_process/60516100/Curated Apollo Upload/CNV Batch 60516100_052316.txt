@@ -1,0 +1,58 @@
+Analysis Software: CopyCaller v2.1																			
+																			
+File name: CNV Batch 60516100_2016-05-23_export.txt																			
+Target name: Hs00010001_cn																			
+Reference name: Reference																			
+																			
+File Header:																			
+* Barcode = NA																			
+* Block Type = 384-Well Block																			
+* Calibration Background is expired  = No																			
+* Calibration Background performed on  = 03-01-2016 13:26:34 EST																			
+* Calibration FAM is expired  = Yes																			
+* Calibration FAM performed on  = 11-20-2015 13:21:43 EST																			
+* Calibration NED is expired  = Yes																			
+* Calibration NED performed on  = 11-20-2015 13:55:25 EST																			
+* Calibration ROI is expired  = Yes																			
+* Calibration ROI performed on  = 11-20-2015 12:56:48 EST																			
+* Calibration ROX is expired  = Yes																			
+* Calibration ROX performed on  = 11-20-2015 13:47:07 EST																			
+* Calibration SYBR is expired  = Yes																			
+* Calibration SYBR performed on  = 11-20-2015 14:13:04 EST																			
+* Calibration TAMRA is expired  = Yes																			
+* Calibration TAMRA performed on  = 11-20-2015 14:04:40 EST																			
+* Calibration Uniformity is expired  = Yes																			
+* Calibration Uniformity performed on  = 11-20-2015 13:12:57 EST																			
+* Calibration VIC is expired  = Yes																			
+* Calibration VIC performed on  = 11-20-2015 13:38:46 EST																			
+* Chemistry = TAQMAN																			
+* Comment = NA																			
+* Date Created = 05-23-2016 16:35:25 EDT																			
+* Experiment File Name = D:\Applied Biosystems\QuantStudio 12K Flex Software\User Files\experiments\2016-05-23 101414 P16050003 CNV.eds																			
+* Experiment Name = 2016-05-23 101414 P16050003 CNV																			
+* Experiment Run End Time = 05-23-2016 08:44:09 EDT																			
+* Experiment Type = Standard Curve																			
+* Instrument Name = 285880875																			
+* Instrument Serial Number = 285880875																			
+* Instrument Type = QuantStudio 12K Flex																			
+* Passive Reference = ROX																			
+* Quantification Cycle Method = Ct																			
+* Signal Smoothing On = true																			
+"* Stage/ Cycle where Analysis is performed = Stage 2, Step 2"																			
+* User Name = NA																			
+																			
+Analysis Parameters:																			
+VIC Ct detection threshold: 32.0																			
+Most frequent sample copy number: 2																			
+																			
+Total number of samples: 10																			
+- Negative control: 1																			
+- 2 Copies: 7																			
+- 3 Copies: 2																			
+																			
+Total number of wells omitted from analysis: 4																			
+- Negative control sample well: 4																			
+																			
+Delta Ct variance: 0.0711																			
+Sample Name	Target	Reference	Plate ID	CN Calculated	CN Predicted	Confidence	|Z-Score|	Replicate Count	Replicates Analyzed	FAM Ct Mean	VIC Ct Mean	Delta Ct Mean	Delta Ct SD	Delta Delta Ct	RQ	Min CN	Max CN	CN Range	Sample Comments
+P16050003	Hs00010001_cn	Reference		1.83	2	> 0.99	1.08	4	4	24.4523	24.749	-0.2968	0.08	0.13	0.92	1.69	1.91	0.22	 
