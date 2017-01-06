@@ -51,11 +51,12 @@ for subdir, dirs, allfile in os.walk(datapath):
             # attach filename as a column indicator
             df['file_name'] = fileName
 
+            df['count'] = df["file_name"].count()
+
             filter_dataframe = df[df['Manual']=='TRUE']
             list.append(filter_dataframe)
 
 final_dataframe = pandas.concat(list)
-
 
 ## THIS IS THE QC DEV
 writer = final_dataframe.to_csv(os.path.join(QC_PROCESS_DIR,'pgx_qc_{}.csv').format(pandas.datetime.today().strftime(
