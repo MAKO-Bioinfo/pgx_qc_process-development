@@ -10,7 +10,7 @@
 ##    ignore rows with "#"
 ## 4. Convert column "Manual" to string and convert to UpperCase
 ## 5. Apped all the dataframe and concate the list of dataframes into a big one
-## 6. Write dataframe to csv files with timestamp
+## 6. Write dataframe to csv files with timestamp   /
 ##
 ## Jack Yen
 ## Dec 30th, 2016
@@ -38,7 +38,7 @@ filter_frame = pandas.DataFrame()
 list = []
 for subdir, dirs, allfile in os.walk(datapath):
     for files in allfile:
-        if fnmatch.fnmatch(files, '*geno*.txt') | fnmatch.fnmatch(files, '*Geno*.txt'):
+        if fnmatch.fnmatch(files, '*geno*.txt') | fnmatch.fnmatch(files, '*Geno*.txt') | fnmatch.fnmatch(files,'*GENO*'):
         #if fnmatch.fnmatch(files, '61004100_geno_10062016.txt'):
         #if fnmatch.fnmatch(files, 'ITT Shipment 13_geno_12122016_2.txt'):
             fileName = os.path.splitext(files)[0]
@@ -51,9 +51,12 @@ for subdir, dirs, allfile in os.walk(datapath):
             # attach filename as a column indicator
             df['file_name'] = fileName
 
-            df['count'] = df["file_name"].count()
+            df['sample_count'] = df["file_name"].count()
+            #df['qc_fail'] = (df["Manual"] =='TRUE').count()
 
             filter_dataframe = df[df['Manual']=='TRUE']
+            filter_dataframe['qc_fail'] = len(filter_dataframe.index)
+            filter_dataframe['qc_percent'] = filter_dataframe['qc_fail']/(filter_dataframe['sample_count'])
             list.append(filter_dataframe)
 
 final_dataframe = pandas.concat(list)
