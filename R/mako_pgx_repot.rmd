@@ -1,0 +1,326 @@
+---
+title: "Mako Genetics PGx QA/QC 2016 report"
+author: 'Author: Jack Yen'
+date: '`r format(Sys.time(), "%B, %d, %Y")`'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,tidy.opts=list(width.cutoff=60),tidy=TRUE)
+```
+<img src="http://makomedical.com/wp-content/uploads/2016/09/MAKO_header_Logo.png" width="425"/> <img src="http://makomedical.com/wp-content/uploads/2016/08/pgx_header.png" width="300"/> 
+
+## Summary
+Mako Genomics launched PGx in March 2016. This report shows our performance in 2016.
+For more information about Mako PGx test please visit  <http://makomedical.com/pharmacogenetics/>
+
+This report contains information regarding sample volume per batch, sample count per account, sample rejection and turn around time per month. This report shows a steady increase in sample volume growth and improvement in rejection rate. The improvement in rejection rate was due to the growing sample volume which the lab was able to use Open Array plate which gives a higher sensitivity and requires smaller amount of DNA input in comparison to the requirement of 384 well plate format.
+
+The genomics team also performed admirably in terms of turn around time. Over 97% of the samples were reported within 10 business days turn around period. The outliers samples are our in house samples which we purposely put on pause until enough additional samples were available to process in order to be cost effective. The holidays season also contribute to these delays. 
+
+The raw datasets are extracted from Apollo LIMS and save as the csv format, after steps of cleaning the datasets. The data are imported into R and use R-markdown format to generate both pdf format and html format of the report.
+
+
+##### *The first step of our analysis is simply to load packages, data and take a look at the data.*
+```{r}
+##load library and set path
+library(ggplot2)
+library(knitr)
+library(DT)
+library(xtable)
+library("RColorBrewer")
+library("plot3D")
+library(dplyr)
+library(lattice)
+library(scales)
+library(grid)
+library(gridExtra)
+
+#setwd("/Users/jack/workspace/apollo/data/")
+setwd("/Volumes/Genetics/Jack/apollo/data/")
+
+## load datasets
+data <- read.csv(file = "pgx_count_2016.CSV",as.is = T, header=T, sep = ",")
+mako_data <- read.csv(file= "pgx_abre_comp_count_2016.CSV", as.is = T,header = T, sep = ",")
+data_reject <- read.csv(file="pgx_rejection_2016.CSV")
+tat_data <- read.csv(file="tat_2016.csv")
+
+## OA
+## manual
+data_manual_OA <- read.csv(file = "pgx_qc_manual_OA_20170207_145619.csv", as.is = T, header=T, sep = ",",fileEncoding="latin1")
+## namp
+data_noamp_OA <- read.csv(file = "pgx_qc_noamp_OA_20170207_145620.csv",as.is = T, header=T, sep = ",",fileEncoding="latin1")
+## und
+data_und_OA <- read.csv(file = "pgx_qc_und_OA_20170207_145620.csv",as.is = T, header=T, sep = ",",fileEncoding="latin1")
+
+## 384
+## manual
+data_manual_384 <- read.csv(file = "pgx_qc_manual_384_20170207_145620.csv", as.is = T, header=T, sep = ",",fileEncoding="latin1")
+## namp
+data_noamp_384 <- read.csv(file = "pgx_qc_noamp_384_20170207_145620.csv",as.is = T, header=T, sep = ",",fileEncoding="latin1")
+## und
+data_und_384 <- read.csv(file = "pgx_qc_und_384_20170207_145620.csv",as.is = T, header=T, sep = ",",fileEncoding="latin1")
+
+## define variable
+date <- data$date
+sample_count <- data$count
+account <- data$account
+type <- data$type
+
+## count sample table calculation
+data_aggr_total <- aggregate(count ~ month, data, sum)
+total_2016<- sum(data_aggr_total$count)
+data_aggr_total <- rbind(data_aggr_total,data.frame(month="Total",count=total_2016))
+data_aggr_total_1 <- rbind(data_aggr_total,data.frame(month="Total",count=total_2016))
+data_aggr_total$percent_contribution <- data_aggr_total$count/total_2016*100
+
+data_aggr_account <- aggregate(count ~ account, data, sum)
+data_aggr_account_order <- data_aggr_account[order(data_aggr_account$count,decreasing = TRUE),]
+row.names(data_aggr_account_order) <- NULL
+
+## reject sample table calculation
+data_aggr_reject <- aggregate(reject_count ~ month, data_reject, sum)
+total_reject_2016<- sum(data_aggr_reject$reject_count)
+data_aggr_reject_new <- merge(data_aggr_reject,data_aggr_total_1,by="month",all.y = TRUE)
+
+data_aggr_reject_new$percent <- ((data_aggr_reject_new$reject_count)/(data_aggr_reject_new$count+data_aggr_reject_new$reject_count))*100
+
+data_aggr_reject_new_order <- data_aggr_reject_new[order(data_aggr_reject_new$reject_count,decreasing = FALSE),]
+row.names(data_aggr_reject_new_order) <- NULL
+
+## mako_data without ITT
+mako_date <- mako_data$date
+mako_sample_count <- mako_data$count
+mako_account <- mako_data$account
+mako_type <- mako_data$type
+
+## TAT variable
+new_date<- as.Date(tat_data$Received.Date, "%m/%d/%Y")
+tat_data$month <- strftime(new_date,"%m")
+month <- tat_data$month
+TAT <- tat_data$TAT
+
+##### QC plot
+### OA
+## this shows which assay ID fails more frequently than others
+line_g_manual_OA_cumulative_assay_ID <- ggplot(aes(x=Assay.ID,y=qc_percent,fill=file_name),data=data_manual_OA)+
+  geom_bar(aes(fill=file_name),stat = "identity")+theme(axis.text.x=element_text(angle=70, hjust=1))+labs(x="Assay",y="qc fail count")+ggtitle("cumulative Assay failure manual OA count 2016")
+
+line_g_noamp_OA_cumulative_assay_ID <- ggplot(aes(x=Assay.ID,y=qc_percent,fill=file_name),data=data_noamp_OA)+
+  geom_bar(aes(fill=file_name),stat = "identity")+theme(axis.text.x=element_text(angle=70, hjust=1))+labs(x="Assay",y="qc fail count")+ggtitle("cumulative Assay failure no-amp OA count 2016")
+
+line_g_und_OA_cumulative_assay_ID <- ggplot(aes(x=Assay.ID,y=qc_percent,fill=file_name),data=data_und_OA)+ 
+  geom_bar(aes(fill=file_name),stat = "identity")+theme(axis.text.x=element_text(angle=70, hjust=1))+labs(x="Assay",y="qc fail count")+ggtitle("cumulative Assay failure undetermined OA count 2016")
+
+## plot jitter plot
+jitter_manual_OA <- ggplot(data_manual_OA, aes(file_name,-qc_percent))+
+  geom_jitter(aes(colour = Assay.ID))+
+  ggtitle("Assay QC Fail Manual OA")+labs(x="Batch",y="qc fail percent")+geom_hline(yintercept = 5,color="blue",lty=2)+theme(axis.text.x=element_text(angle=80, hjust=1))
+
+jitter_noamp_OA <- ggplot(data_noamp_OA, aes(file_name, qc_percent))+
+  geom_jitter(aes(colour = Assay.ID))+
+  ggtitle("Assay QC Fail noamp OA")+labs(x="Batch",y="qc fail percent")+geom_hline(yintercept = 5,color="blue",lty=2)+theme(axis.text.x=element_text(angle=80, hjust=1))
+
+jitter_und_OA <- ggplot(data_und_OA, aes(file_name, qc_percent))+
+  geom_jitter(aes(colour = Assay.ID))+
+  ggtitle("Assay QC Fail und OA")+labs(x="Batch",y="qc fail percent")+geom_hline(yintercept = 5,color="blue",lty=2)+theme(axis.text.x=element_text(angle=80, hjust=1))
+
+grid_arrange_shared_legend <- function(..., nrow = 1, ncol = length(list(...)), position = c("bottom", "right")) {
+  
+  plots <- list(...)
+  position <- match.arg(position)
+  g <- ggplotGrob(plots[[1]] + theme(legend.position = position,legend.key = element_rect(size = 0.005)))$grobs
+  legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
+  lheight <- sum(legend$height)
+  lwidth <- sum(legend$width)
+  gl <- lapply(plots, function(x) x + theme(legend.position = "none"))
+  gl <- c(gl, nrow = nrow, ncol = ncol)
+  
+  combined <- switch(position,
+                     "bottom" = arrangeGrob(do.call(arrangeGrob, gl),
+                                            legend,
+                                            ncol = 1,
+                                            heights = unit.c(unit(1, "npc") - lheight, lheight)),
+                     "right" = arrangeGrob(do.call(arrangeGrob, gl),
+                                           legend,
+                                           ncol = 2,
+                                           widths = unit.c(unit(1, "npc") - lwidth, lwidth)))
+  grid.newpage()
+  grid.draw(combined)
+}
+
+## this whows the assay QC fail improve over time
+date_format_manual_OA <- formatC(data_manual_OA$date,width=8,flag="0")
+date_format_noamp_OA <- formatC(data_noamp_OA$date,width=8,flag="0")
+date_format_und_OA <- formatC(data_und_OA$date,width=8,flag="0")
+
+#new_date <- transform(date_format, x = as.Date(as.character(x), "%m%d%Y"))
+new_date_manual_OA <- as.Date(date_format_manual_OA, format = "%m%d%Y")
+new_date_noamp_OA <- as.Date(date_format_noamp_OA, format = "%m%d%Y")
+new_date_und_OA <- as.Date(date_format_und_OA, format = "%m%d%Y")
+
+## plot over time on OA
+line_g_manual_OA_qc_fail_over_time_assay_ID <- ggplot(aes(x=new_date_manual_OA,y=qc_percent,fill=Assay.ID),data=data_manual_OA)+
+ geom_bar(aes(fill=Assay.ID),stat = "identity")+theme(axis.text.x=element_text(angle=70, hjust=1))+labs(x="analysis date",y="qc fail count")+ggtitle("Assay ID failure over time Manual OA")+scale_x_date(date_breaks = "1 week",labels = date_format("%m-%d-%Y"))
+
+line_g_npamp_OA_qc_fail_over_time_assay_ID <- ggplot(aes(x=new_date_noamp_OA,y=qc_percent,fill=Assay.ID),data=data_noamp_OA)+
+  geom_bar(aes(fill=Assay.ID),stat = "identity")+theme(axis.text.x=element_text(angle=70, hjust=1))+labs(x="analysis date",y="qc fail count")+ggtitle("Assay ID failure over time noamp OA")+scale_x_date(date_breaks = "1 week",labels = date_format("%m-%d-%Y"))
+
+line_g_und_OA_qc_fail_over_time_assay_ID <- ggplot(aes(x=new_date_und_OA,y=qc_percent,fill=Assay.ID),data=data_und_OA)+
+  geom_bar(aes(fill=Assay.ID),stat = "identity")+theme(axis.text.x=element_text(angle=70, hjust=1))+labs(x="analysis date",y="qc fail count")+ggtitle("Assay ID failure over time und OA")+scale_x_date(date_breaks = "1 week",labels = date_format("%m-%d-%Y"))
+
+### 384
+## this shows which assay ID fails more frequently than others on 384
+line_g_manual_384_cumulative_assay_ID <- ggplot(aes(x=Assay.ID,y=qc_percent,fill=file_name),data=data_manual_384)+
+  geom_bar(aes(fill=file_name),stat = "identity")+theme(axis.text.x=element_text(angle=70, hjust=1))+ggtitle("cumulative Assay ID failure manual 384")
+
+line_g_noamp_384_cumulative_assay_ID <- ggplot(aes(x=Assay.ID,y=qc_percent,fill=file_name),data=data_noamp_384)+
+  geom_bar(aes(fill=file_name),stat = "identity")+theme(axis.text.x=element_text(angle=70, hjust=1))+ggtitle("cumulative Assay ID failure noamp 384")
+
+line_g_und_384_cumulative_assay_ID <- ggplot(aes(x=Assay.ID,y=qc_percent,fill=file_name),data=data_und_384)+ 
+  geom_bar(aes(fill=file_name),stat = "identity")+theme(axis.text.x=element_text(angle=70, hjust=1))+ggtitle("cumulative Assay ID failure und 384")
+
+## jitter
+jitter_manual_384 <- ggplot(data_manual_384, aes(file_name,qc_percent))+
+  geom_jitter(aes(colour = Assay.ID))+
+  ggtitle("Assay QC Fail Manual 384")+labs(x="Batch",y="qc fail percent")+geom_hline(yintercept = 15,color="blue",lty=2)+theme(axis.text.x=element_text(angle=80, hjust=1))
+
+jitter_noamp_384 <- ggplot(data_noamp_384, aes(file_name, qc_percent))+
+  geom_jitter(aes(colour = Assay.ID))+
+  ggtitle("Assay QC Fail noamp 384")+labs(x="Batch",y="qc fail percent")+geom_hline(yintercept = 17,color="blue",lty=2)+theme(axis.text.x=element_text(angle=80, hjust=1))
+
+jitter_und_384 <- ggplot(data_und_384, aes(file_name, qc_percent))+
+  geom_jitter(aes(colour = Assay.ID))+
+  ggtitle("Assay QC Fail und 384")+labs(x="Batch",y="qc fail percent")+geom_hline(yintercept = 1.5,color="blue",lty=2)+theme(axis.text.x=element_text(angle=80, hjust=1))
+
+## this whows the assay QC fail improve over time
+date_format_manual_384 <- formatC(data_manual_384$date,width=8,flag="0")
+date_format_noamp_384 <- formatC(data_noamp_384$date,width=8,flag="0")
+date_format_und_384 <- formatC(data_und_384$date,width=8,flag="0")
+
+#new_date <- transform(date_format, x = as.Date(as.character(x), "%m%d%Y"))
+new_date_manual_384 <- as.Date(date_format_manual_384, format = "%m%d%Y")
+new_date_noamp_384 <- as.Date(date_format_noamp_384, format = "%m%d%Y")
+new_date_und_384 <- as.Date(date_format_und_384, format = "%m%d%Y")
+
+## plot over time on 384
+line_g_manual_384_qc_fail_over_time_assay_ID <- ggplot(aes(x=new_date_manual_384,y=qc_percent,fill=Assay.ID),data=data_manual_384)+
+  geom_bar(aes(fill=Assay.ID),stat = "identity")+theme(axis.text.x=element_text(angle=70, hjust=1))+labs(x="analysis date",y="qc fail count")+ggtitle("Assay ID failure over time Manual OA")+scale_x_date(date_breaks = "2 week",labels = date_format("%m-%d-%Y"))
+
+line_g_npamp_384_qc_fail_over_time_assay_ID <- ggplot(aes(x=new_date_noamp_384,y=qc_percent,fill=Assay.ID),data=data_noamp_384)+
+  geom_bar(aes(fill=Assay.ID),stat = "identity")+theme(axis.text.x=element_text(angle=70, hjust=1))+labs(x="analysis date",y="qc fail count")+ggtitle("Assay ID failure over time noamp OA")+scale_x_date(date_breaks = "2 week",labels = date_format("%m-%d-%Y"))
+
+line_g_und_384_qc_fail_over_time_assay_ID <- ggplot(aes(x=new_date_und_384,y=qc_percent,fill=Assay.ID),data=data_und_384)+
+  geom_bar(aes(fill=Assay.ID),stat = "identity")+theme(axis.text.x=element_text(angle=70, hjust=1))+labs(x="analysis date",y="qc fail count")+ggtitle("Assay ID failure over time und OA")+scale_x_date(date_breaks = "2 week",labels = date_format("%m-%d-%Y"))
+
+
+
+```
+***
+### Mako Genetics PGx total sample count in 2016
+The following plot display the PGx sample count from each batch per receiving time point from March to Dec, 2016,
+the PGx sample volumes picks up rapidily when the lab start receiving samples from ITT lab.
+
+```{r fig.width = 30, fig.height = 20,echo=FALSE}
+g_total <- ggplot(aes(x=date,y=sample_count,fill=account),data=data) 
+g_total + geom_bar(aes(fill=account),stat = "identity")+ggtitle("PGX sample count in 2016 with ITT")+labs(x="date",y="sample count")+theme(axis.text.x=element_text(angle=90, hjust=1),axis.text=element_text(size=18),title=element_text(size=30,face="bold"),legend.text= element_text(size=12,face="bold"))
+
+
+
+
+```
+
+#### Table 1. PGx sample count per Month in 2016
+```{r fig.width = 25, fig.height = 20,echo=FALSE}
+kable(data_aggr_total, fotmat="html",pad=1)
+```
+
+### Mako Genetics PGx sample count per account in 2016
+ITT Lab contribute the most portion of the sample volumes in 2016
+
+```{r fig.width = 30, fig.height = 20,echo=FALSE}
+g1_total <- ggplot(aes(x=account,y=sample_count),data=data) 
+g1_total + geom_bar(aes(fill=account),stat = "identity")+ggtitle("PGX sample count by account in 2016 with ITT")+labs(x="account",y="sample count")+theme(axis.text.x=element_text(angle=70, hjust=1,face="bold"),axis.text=element_text(size=18),title=element_text(size=30,face="bold"),legend.text= element_text(size=12,face="bold"))
+```
+
+#### Table 2. PGx sample count per account in 2016
+```{r fig.width = 15, fig.height = 10,echo=FALSE}
+kable(data_aggr_account_order, fotmat="html",pad=1)
+```
+
+### Mako Genetics PGx total sample count exclude ITT in 2016
+The following plot display the PGx sample count without ITT from each batch per receiving time point from March to Dec, 2016.
+
+```{r fig.width = 30, fig.height = 20,echo=FALSE}
+g <- ggplot(aes(x=mako_date,y=mako_sample_count,fill=mako_account),data=mako_data) 
+g + geom_bar(aes(fill=mako_account),stat = "identity")+ggtitle("PGX sample count in 2016 without ITT")+labs(x="date",y="sample count")+theme(axis.text.x=element_text(angle=90, hjust=1),axis.text=element_text(size=18),title=element_text(size=30,face="bold"),legend.text= element_text(size=12,face="bold")) 
+```
+
+### Mako Genetics PGx sample count per account exclude ITT in 2016
+This graph shows sample volume distribution without the ITT samples. The Validation Account (22), Generation Familty Practice(20), PGX House Account (18) and  MYND Analytics (18) are the top four contributing accounts excluding ITT.
+
+```{r fig.width = 30, fig.height = 20,echo=FALSE}
+g1 <- ggplot(aes(x=mako_account,y=mako_sample_count),data=mako_data) 
+g1 + geom_bar(aes(fill=mako_account),stat = "identity")+ggtitle("PGX sample count by account in 2016")+ylim(0,18)+labs(x="account",y="sample count")+theme(axis.text.x=element_text(angle=70, hjust=1,face="bold"),axis.text=element_text(size=18),title=element_text(size=30,face="bold"),legend.text= element_text(size=12,face="bold"))
+```
+
+### Mako Genetics PGx sample rejection count in 2016
+The graphs shows the rejection count per account in a month. It shows the improvement of the labs rejections rate.
+The reason is due to increasing sample volume which the lab is able to utilize open array technology.
+
+```{r fig.width = 30, fig.height = 20,echo=FALSE}
+g_reject <- ggplot(aes(x=month,y=reject_count,fill=account),data=data_reject) 
+g_reject + geom_bar(aes(fill=account),stat="identity")+scale_x_continuous(breaks=c(1,2,3,4,5,6,7,8,9,10,11,12))+ylim(0,12.5)+theme(axis.text.x=element_text(hjust=1,face="bold"),axis.text=element_text(size=18),title=element_text(size=30,face="bold"),legend.text= element_text(size=12,face="bold"))
+```
+
+#### Table 3. PGx sample rejection count per month 2016
+```{r fig.width = 20, fig.height = 15,echo=FALSE}
+kable(data_aggr_reject_new_order, fotmat="html",pad=1)
+```
+
+### Mako Genetics PGx turn acount time in 2016
+This graphs shows 97% of the samples are within the 10 business day around time. The outliers are mostly our current house account which we purposely pause to process until receiving enough samples to batch together to be more cost effective.
+
+<span style="background-color: #FFFF00">The outliers above the 10 days threshold are samples with missing payment. These samples were run through the process but the report were not release until affidavit has been resolved.</span>
+
+```{r fig.width = 25, fig.height = 15,echo=FALSE}
+ggplot(data=tat_data,aes(x=month,y=TAT)) + geom_jitter(stat = "identity",colour = "blue",size=3)+ggtitle("Monthly PGX turn around time")+labs(x="Month",y="Business days")+scale_y_continuous(breaks=c(5,10,15,20,25,30,35,40,45,50,55,60,65))+geom_hline(yintercept = 10)+theme(axis.text.x=element_text(hjust=1,face="bold"),axis.text=element_text(size=18),title=element_text(size=30,face="bold"))
+```
+
+***
+### PGx Cumulative Assay Failure count on Open Array in 2016
+```{r fig.width=20, fig.height=10,echo=FALSE}
+grid_arrange_shared_legend(line_g_manual_OA_cumulative_assay_ID,line_g_noamp_OA_cumulative_assay_ID,line_g_und_OA_cumulative_assay_ID,ncol = 3,nrow = 1,position = "right")
+```
+
+### PGx Assay Percent Failure per Batch on Open Array in 2016
+```{r fig.width=15, fig.height=10,echo=FALSE}
+grid_arrange_shared_legend(jitter_manual_OA,jitter_noamp_OA,jitter_und_OA,ncol = 3,nrow = 1,position = "right")
+```
+
+### PGx Assay Failure over time on Open Array in 2016
+```{r fig.width=15, fig.height=10,echo=FALSE}
+grid_arrange_shared_legend(line_g_manual_OA_qc_fail_over_time_assay_ID,line_g_npamp_OA_qc_fail_over_time_assay_ID,line_g_und_OA_qc_fail_over_time_assay_ID,ncol = 3,nrow = 1,position = "bottom")
+```
+
+
+### PGx Cumulative Assay Failure count on 384 in 2016
+```{r fig.width=30, fig.height=10,echo=FALSE}
+grid_arrange_shared_legend(line_g_manual_384_cumulative_assay_ID,line_g_noamp_384_cumulative_assay_ID,line_g_und_384_cumulative_assay_ID,ncol = 3,nrow = 1,position = "right")
+```
+
+### PGx Assay Percent Failure per Batch on 384 in 2016
+```{r fig.width=20, fig.height=10,echo=FALSE}
+grid_arrange_shared_legend(jitter_manual_384,jitter_noamp_384,jitter_und_384,ncol = 3,nrow = 1,position = "right")
+```
+
+### PGx Assay Failure over time on 384 in 2016
+```{r fig.width=15, fig.height=10,echo=FALSE}
+grid_arrange_shared_legend(line_g_manual_384_qc_fail_over_time_assay_ID,line_g_npamp_384_qc_fail_over_time_assay_ID,line_g_und_384_qc_fail_over_time_assay_ID,ncol = 3,nrow = 1,position = "bottom")
+```
+
+
+
+Signature: 
+
+Technical Supervisor: _____________      Review Date: ___________________

@@ -1,9 +1,12 @@
 library(ggplot2)
 library(dplyr)
 library(plyr)
-setwd("/Volumes/Genetics/PGx RUNS - All files/5 Genotyper & CopyCaller .TXT Exports for Apollo/qc_dev_process")
+#setwd("/Volumes/Genetics/PGx RUNS - All files/5 Genotyper & CopyCaller .TXT Exports for Apollo/qc_dev_process")
+setwd("/Volumes/Genetics/PGx RUNS - All files/2016 GT QC Files/")
+#data <- read.csv(file = "pgx_qc_20170112_102647.csv", header=T,sep=",",fileEncoding="latin1",stringsAsFactors = FALSE)
 
-data <- read.csv(file = "pgx_qc_20170112_102647.csv", header=T,sep=",",fileEncoding="latin1",stringsAsFactors = FALSE)
+data <- read.csv(file = "pgx_qc_20170119_132433.csv", header=T,sep=",",fileEncoding="latin1",stringsAsFactors = FALSE)
+
 
 ## filter data by sample ID NA17104 NA17109 NA17245
 
@@ -57,37 +60,36 @@ ggplot(data_NA17245_unique, aes(x=file_name, y=qc_percent))+geom_point(shape=1)+
 data[order(data$file_name),]
 data_unique <- data[!duplicated(data[,c('file_name','qc_fail')]),]
 
-data_unique$qc_fail_percent <- data_unique$qc_fail/data_unique$sample_count
+data_unique$qc_fail_percent_sample <- data_unique$qc_fail/data_unique$sample_count
+data_unique$qc_fail_percent_assay <- data$qc_precent_assay
 
-ggplot(data_unique, aes(x=file_name, y=qc_fail_percent))+geom_smooth(method="lm",aes(group=1))+theme(axis.text.x=element_text(angle=70, hjust=1,face="bold"))+ylim(0,0.4)+ggtitle("PGX Percent QC Failure")
+
+ggplot(data, aes(x=file_name, y=data$qc_fail_sample))+geom_smooth(method="lm",aes(group=1))+theme(axis.text.x=element_text(angle=70, hjust=1,face="bold"))+ylim(0,0.4)+ggtitle("PGX Percent QC Failure")
+ggplot(data, aes(x=file_name, y=data$qc_fail_percent_assay))+geom_smooth(method="lm",aes(group=1))+theme(axis.text.x=element_text(angle=70, hjust=1,face="bold"))+ylim(0,0.4)+ggtitle("PGX Percent QC Failure")
 
 
 
 ggplot(data, aes(x=file_name, y=qc_percent))+geom_point()+geom_smooth(method="lm",aes(group=1))+theme(axis.text.x=element_text(angle=70, hjust=1,face="bold"))+ggtitle("PGX Percent QC Failure")
 
-ggplot(data, aes(x=file_name, y=qc_percent,fill=Assay.ID))+geom_bar()+geom_smooth(method="lm",aes(group=1))+theme(axis.text.x=element_text(angle=70, hjust=1,face="bold"))+ggtitle("PGX Percent QC Failure")
-
-
-data_test <- unique(data)
-
-
-#data_unique_assay_id <- data[!duplicated(data[,c('Assay.ID')]),]
-#data_unique_assay_id_file_name <- data_unique_assay_id[!duplicated(data_unique_assay_id[,c('file_name')]),]
-
-ggplot(data, aes(x=file_name, y=qc_percent,fill=Assay.ID))+geom_line()+geom_smooth(method="lm",aes(group=1))+theme(axis.text.x=element_text(angle=70, hjust=1,face="bold"))+ylim(0,0.4)+ggtitle("PGX Percent QC Failure")
+#ggplot(data, aes(x=file_name, y=qc_percent,fill=Assay.ID))+geom_bar()+geom_smooth(method="lm",aes(group=1))+theme(axis.text.x=element_text(angle=70, hjust=1,face="bold"))+ggtitle("PGX Percent QC Failure")
 
 
 
 
-data_aggr <- aggregate(count ~ file_name, data, sum)
-data_reject_aggr <- aggregate(reject_count ~ month, data_reject, sum)
-data_reject_date <- data_reject_aggr/data_aggr
-
-df <- rbind(data.frame(fill="total", month=data_aggr$month,count=data_aggr$count),
-            data.frame(fill="reject",month=data_reject_aggr$month,count=data_reject_aggr$reject_count))
+ggplot(data, aes(factor(file_name), qc_fail_percent_assay, fill = file_name)) + geom_bar(stat="identity", position = "dodge")+labs(x="assay",y="percent_qc_fail")+theme(axis.text.x=element_text(angle=90, hjust=1)) 
 
 
-ggplot(data_NA17245, aes(x=file_name, y=ROX)) + geom_density2d() 
 
 
+
+# Simple Scatterplot
+attach(data)
+plot(data$file_name, data$qc_fail_percent_assay, main="Scatterplot Example", xlab="batch_name", ylab="qc_fail_percent_assay", pch=19)
+plot(data$file_name, data$qc_fail_percent_sample, main="Scatterplot Example", xlab="batch_name", ylab="qc_fail_percent_sample", pch=19)
+
+qc_fail_percent_assay <- data$qc_precent_assay
+qc_fail_percent_sample <- data$qc_fail_percent_sample
+file_name <- data$file_name
+# Basic Scatterplot Matrix
+pairs(~qc_fail_percent_assay+file_name,data=data,  main="Simple Scatterplot Matrix")
 
